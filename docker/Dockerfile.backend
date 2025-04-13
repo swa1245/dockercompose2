@@ -1,0 +1,28 @@
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+COPY packages/db/package.json ./packages/db/
+COPY apps/http-backend/package.json ./apps/http-backend/
+COPY turbo.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy all files
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate --schema=./packages/db/prisma/schema.prisma
+
+# Expose port
+EXPOSE 8080
+
+# Set environment variables
+ENV NODE_ENV production
+
+# Run the application
+CMD ["npx", "ts-node", "apps/http-backend/index.ts"]
